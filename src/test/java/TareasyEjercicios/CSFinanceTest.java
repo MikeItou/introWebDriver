@@ -21,7 +21,7 @@ public class CSFinanceTest {
 
         //username & password
         int randomNumber = new Random().nextInt(100000);
-        String username = "Juanito.Banana"+randomNumber,password = "Testing1234";
+        String username = "Juanito.Banana"/*+randomNumber*/,password = "Testing1234";
 
 
         //Navegar en la URL y verificarla
