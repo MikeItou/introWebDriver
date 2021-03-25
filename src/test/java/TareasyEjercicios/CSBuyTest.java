@@ -20,7 +20,7 @@ public class CSBuyTest {
                    registerBuy=null, fieldSymbol=null, fieldQuantity=null, dataTableShares=null, dataTableSymbol=null,
                    dataTableName=null, dataTablePrice=null, dataTableTotal=null, dataTableTotal2=null, dataTableTotal3=null;
 
-        String username = "Juanito.Banana", password = "Testing1234", symbolName = "MX",quantityValue = "2",
+        String username = "Juanito.Banana", password = "Testing1234", symbolName = "MX",quantityValue = "24",
                 nameValue = "MagnaChip Semiconductor Corp";
 
         //Inicicar sesion
