@@ -7,7 +7,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.Select;
 
 
-public class CSSellTest {
+public class CSSellHistoryTest {
     static WebDriver driver;
 
     public static void main(String[] args) {
@@ -18,23 +18,54 @@ public class CSSellTest {
         //Declarar elementos a usar
         WebElement fieldUsername = null, fieldPassword = null, buttonLoginSell = null,
                 registerSell = null, fieldQuantity = null, dataTableShares = null,
-                dataTablePrice = null, dataTableTotal = null, registerHistory = null, dataTableSymbol = null;
+                dataTablePrice = null, dataTableTotal = null, registerHistory = null, dataTableSymbol = null,
+                dataTableName = null,dataTableTOTAL = null, dataTableTransacted = null;
 
         Select dropDownListElement = null;
 
-        String username = "Juanito.Banana", password = "Testing1234", symbolName = "MX", restQty = "6";
-        String[] valueTableBeforeSell, valueTableAfterSell,valueTableHistory;
+        String username = "Juanito.Banana", password = "Testing1234", symbolName = "MX", restQty = "10";
+        //String[] valueTableBeforeSell, valueTableAfterSell,valueTableHistory;
+        String[] dataTableBefore, dataTableAfter, dataTableHistory;
 
         //Inicicar sesion
-        valueTableBeforeSell = iniciarLogin(username,password, symbolName, fieldUsername,fieldPassword,buttonLoginSell, dataTableShares, dataTablePrice,dataTableTotal);
-        realizarVenta(symbolName,restQty,valueTableBeforeSell[0],dropDownListElement, registerSell,fieldQuantity,buttonLoginSell);
+        //valueTableBeforeSell = iniciarLogin(username,password, symbolName, fieldUsername,fieldPassword,buttonLoginSell, dataTableShares, dataTablePrice,dataTableTotal);
+        //realizarVenta(symbolName,restQty,valueTableBeforeSell[0],dropDownListElement, registerSell,fieldQuantity,buttonLoginSell);
         //validarVenta(symbolName, valueTableBeforeSell, restQty, dataTableShares,dataTablePrice,dataTableTotal);
-        valueTableAfterSell = obtenerDatosDespuesVenta(symbolName,dataTableShares,dataTablePrice,dataTableTotal);
-        valueTableHistory = validarHistorial(symbolName,restQty,dataTableSymbol, dataTableShares,dataTablePrice,registerHistory);
+        //valueTableAfterSell = obtenerDatosDespuesVenta(symbolName,dataTableShares,dataTablePrice,dataTableTotal);
+        //valueTableHistory = validarHistorial(symbolName,restQty,dataTableSymbol, dataTableShares,dataTablePrice,registerHistory);
+
+        iniciarLogin(username,password, fieldUsername,fieldPassword,buttonLoginSell);
+        dataTableBefore = obtenerDatos(symbolName, dataTableSymbol, dataTableName, dataTableShares,dataTablePrice,dataTableTOTAL);
+        realizarVenta(symbolName,restQty,dataTableBefore,dropDownListElement, registerSell,fieldQuantity,buttonLoginSell);
+        dataTableAfter = obtenerDatos(symbolName, dataTableSymbol, dataTableName, dataTableShares,dataTablePrice,dataTableTOTAL);
+        dataTableHistory = validarHistorial(dataTableBefore,dataTableAfter,registerHistory,dataTableSymbol,dataTableShares,dataTablePrice,dataTableTransacted);
 
     }
 
-    private static String[] validarHistorial(String symbolName, String restQty, WebElement ... screenElements) {
+    private static String[] obtenerDatos(String symbolName, WebElement ... screenElements) {
+        String[] elementosExtraccion = new String[5];
+
+        for (int i = 0; i < screenElements.length; i++) {
+            try{
+                screenElements[i] = driver.findElement(By.xpath("//tr[contains(.,'"+symbolName+"')]//td["+(i+1)+"]"));
+            }
+            catch (Exception a){
+                for (int j = 0; j < screenElements.length; j++) {
+                    elementosExtraccion[j] = "0";
+                }
+                break;
+            }
+            elementosExtraccion[i]=screenElements[i].getText();
+        }
+
+        /*for (int i = 0; i < elementosExtraccion.length; i++) {
+            System.out.println("posicion del arreglo " +i+ " tiene el valor: " + elementosExtraccion[i]);
+        }*/
+
+        return elementosExtraccion;
+    }
+
+    /*private static String[] validarHistorial(String symbolName, String restQty, WebElement ... screenElements) {
         String[] elementsTable = new String[3];
         int castRestQty, castSharesValue;
 
@@ -55,6 +86,41 @@ public class CSSellTest {
             System.out.println("La validación en el ultimo registro mas reciente del historial es correcta.");
 
         return elementsTable;
+    }*/
+
+    private static String[] validarHistorial(String[] dataTableBefore, String[] dataTableAfter, WebElement ... screenElements) {
+        String[] elementosHistorial = new String[4];
+        int castSharesBefore, castSharesAfter,castSharesHistory;
+        double castPriceBefore, castPriceAfter,castPriceHistory;
+
+        screenElements[0] = driver.findElement(By.cssSelector("[href='/history']"));
+        screenElements[0].click();
+
+        for (int i = 1; i < screenElements.length-1; i++) {
+            screenElements[i] = driver.findElement(By.xpath("//tr[last()]//td["+i+"]"));
+            elementosHistorial[i-1] = screenElements[i].getText();
+        }
+
+        castSharesAfter = Integer.parseInt(dataTableAfter[2]);
+        castSharesBefore = Integer.parseInt(dataTableBefore[2]);
+        castSharesHistory = Integer.parseInt(elementosHistorial[1]);
+        castPriceAfter = Double.parseDouble(dataTableAfter[3]);
+        //castPriceBefore = Double.parseDouble(dataTableBefore[3]);
+        castPriceHistory = Double.parseDouble(elementosHistorial[2]);
+
+        /*System.out.println("Shares after:" + castSharesAfter);
+        System.out.println("Shares before:" + castSharesBefore);
+        System.out.println("Shares History:" + castSharesHistory);
+        System.out.println("Price after:" + castPriceAfter);
+        System.out.println("Price History:" + castPriceHistory);
+        System.out.println(dataTableBefore[0] + dataTableAfter[0]);*/
+
+        if(dataTableBefore[0].equals(dataTableAfter[0]) && (castSharesAfter-castSharesBefore) == castSharesHistory && castPriceAfter == castPriceHistory)
+        {
+            System.out.println("La validación de la venta se ha revisado en el historial y ha sido exitosa.");
+        }
+
+        return elementosHistorial;
     }
 
     private static String[] obtenerDatosDespuesVenta(String symbolName, WebElement ... screenElements) {
@@ -92,7 +158,7 @@ public class CSSellTest {
             System.out.println("La venta hecha fue erronea");
     }*/
 
-    private static void realizarVenta(String symbolName, String restQty, String valueBeforeSellQty, Select dropDownListElement, WebElement ... screenelements) {
+    private static void realizarVenta(String symbolName, String restQty, String[] dataTableBefore, Select dropDownListElement, WebElement ... screenelements) {
         int originalQtyCast, restQtyCast;
 
         screenelements[0] =driver.findElement(By.cssSelector("[href='/sell']"));
@@ -104,7 +170,7 @@ public class CSSellTest {
         screenelements[1] = driver.findElement(By.cssSelector("[name='qty']"));
         screenelements[2] = driver.findElement(By.cssSelector(".btn"));
 
-        originalQtyCast = Integer.parseInt(valueBeforeSellQty);
+        originalQtyCast = Integer.parseInt(dataTableBefore[2]);
         restQtyCast = Integer.parseInt(restQty);
 
         if(originalQtyCast-restQtyCast <= 0){
@@ -118,7 +184,17 @@ public class CSSellTest {
         }
     }
 
-    private static String[] iniciarLogin(String username, String password, String symbolName, WebElement ... screenElements) {
+    private static void iniciarLogin(String username, String password, WebElement ... screenelements) {
+        screenelements[0] = driver.findElement(By.cssSelector("[name='username']"));
+        screenelements[1] = driver.findElement(By.cssSelector("[name='password']"));
+        screenelements[2] = driver.findElement(By.cssSelector(".btn"));
+
+        screenelements[0].sendKeys(username);
+        screenelements[1].sendKeys(password);
+        screenelements[2].click();
+    }
+
+    /*private static String[] iniciarLogin(String username, String password, WebElement ... screenElements) {
         String[] elementsWeb = new String[3];
 
         screenElements[0] = driver.findElement(By.cssSelector("[name='username']"));
@@ -135,5 +211,5 @@ public class CSSellTest {
         }
 
         return elementsWeb;
-    }
+    }*/
 }
