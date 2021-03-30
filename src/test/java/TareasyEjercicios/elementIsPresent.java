@@ -2,8 +2,6 @@ package TareasyEjercicios;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-//import org.openqa.selenium.support.ui.WebDriverWait;
-//import sun.jvm.hotspot.oops.ExceptionTableElement;
 
 public class elementIsPresent {
     static WebDriver driver;
