@@ -1,15 +1,14 @@
 package bIntro;
 
-import com.sun.org.apache.bcel.internal.ExceptionConst;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class FinanceParentTest {
 
@@ -19,163 +18,181 @@ public class FinanceParentTest {
     protected static WebElement passwordField;
     protected static WebElement registerButton;
     protected static WebElement loginButton;
+    protected static WebElement symbolValueTable;
+    protected static WebElement nameValueTable;
+    protected static WebElement sharesValueTable;
+    protected static WebElement priceValueTable;
     protected static WebElement totalValueTable;
-    protected static double castDoubleValue;
     protected static double castGetTextDoubleValue;
+    private static double totalDefaultValue = 10000.00;
+    private  static String symbolDefaultValue = "CASH";
+    protected static WebElement financeLink;
+    protected static WebElement quoteLink;
     protected static WebElement buyLink;
+    protected static WebElement sellLink;
+    protected static WebElement historyLink;
+    protected static WebElement logoutLink;
     protected static WebElement quantityField;
     protected static WebElement symbolField;
     protected static WebElement buyButton;
-    protected static WebElement sellLink;
+    protected static WebElement sellButton;
+    protected static WebElement dropDownSymbolElement;
+    protected  static WebDriverWait explicitWait;
 
-    protected static void setup(String browser, String url) {
-        switch (browser){
+    protected static void navegarPaginaPrincipal(String browser, String url) {
+        switch (browser) {
             case "Chrome":
                 driver = new ChromeDriver();
-                driver.get(url);
                 break;
             case "FireFox":
                 driver = new FirefoxDriver();
-                driver.get(url);
-                break;
-            case "InternetExplorer":
-                driver = new InternetExplorerDriver();
-                driver.get(url);
-                break;
-            case "Safari":
-                driver = new SafariDriver();
-                driver.get(url);
-                break;
-            case "Opera":
-                driver = new OperaDriver();
-                driver.get(url);
                 break;
             case "Edge":
                 driver = new EdgeDriver();
-                driver.get(url);
+                break;
+            case "Safari":
+                driver = new SafariDriver();
+                break;
+            case "InternetExplorer":
+                driver = new InternetExplorerDriver();
+                break;
+            case "Opera":
+                driver = new OperaDriver();
                 break;
         }
+        driver.get(url);
     }
 
-    protected static void clickRegisterLink() {
+    protected static void validarPantallaLogin() throws Exception {
         try{
-            registerLink = driver.findElement(By.cssSelector("href='/register'"));
-            registerLink.click();
-        }catch (Exception registerLinkError){
-            System.out.println("El elemento en la página no fue encontrado");
+            usernameField = driver.findElement(By.cssSelector("[name = 'username']"));
+            passwordField = driver.findElement(By.cssSelector("[name = 'password']"));
+            loginButton = driver.findElement(By.cssSelector(".btn"));
+
+            if (usernameField.isDisplayed() && passwordField.isDisplayed() && loginButton.isDisplayed())
+                System.out.println("All the elements in the login screen are visible.");
+            else
+                throw new Exception("Sorry but one element is not visible in the login screen.");
+        }
+
+        catch(NoSuchElementException ex){
+            throw new Exception("One of the elements is not present in the page.");
         }
     }
 
-    protected static void inputUsernamePassword(String username, String password) {
+    protected static void realizarLogin(String user, String pass) {
+        usernameField.sendKeys(user);
+        passwordField.sendKeys(pass);
+        loginButton.click();
+    }
 
+    protected static void validarPantallaPrincipal() throws Exception {
         try{
-            usernameField = driver.findElement(By.cssSelector("[name='username']"));
-            usernameField.sendKeys(username);
-            try {
-                passwordField = driver.findElement(By.cssSelector("[name='password']"));
-                passwordField.sendKeys(password);
-                try {
-                    passwordField = driver.findElement(By.cssSelector("[name='repeat_password']"));
-                    passwordField.sendKeys(password);
-                    try{
-                        registerButton = driver.findElement(By.cssSelector(".btn"));
-                        registerButton.click();
-                    }catch (Exception registerButtonError){
-                        System.out.println("El elemento buton de registro no ha sido encontrado");
-                    }
-                }catch (Exception repeatPasswordFieldError){
-                    System.out.println("El elemento campo repeat password no ha sido encontrado");
-                }
-            }catch (Exception passwordFieldError){
-                System.out.println("El elemento campo de password no ha sido encontrado");
-            }
-        }catch (Exception usernameFieldError){
-            System.out.println("El elemento campo de usuario no ha sido encontrado");
-        }
-    }
-
-    protected static void login(String username, String password) {
-        try {
-            usernameField = driver.findElement(By.cssSelector("[name='username']"));
-            usernameField.sendKeys(username);
-            try {
-                passwordField = driver.findElement(By.cssSelector("[name='password']"));
-                passwordField.sendKeys(password);
-                try {
-                    loginButton = driver.findElement(By.cssSelector(".btn"));
-                    loginButton.click();
-                }catch (Exception loginButtonError){
-                    System.out.println("El boton de login no fue encontrado");
-                }
-            }catch (Exception passwordFieldError){
-                System.out.println("El campo de password no fue encontrado");
-            }
-        }catch (Exception usernameFieldError){
-            System.out.println("El campo de username no fue encontrado");
-        }
-    }
-
-    protected static void validateAccountCash(String totalValue) {
-        try{
-            totalValueTable = driver.findElement(By.xpath("//tr[contains(.,'CASH')]//td[last()]"));
-            castGetTextDoubleValue = Double.parseDouble(totalValueTable.getText());
-            castDoubleValue = Double.parseDouble(totalValue);
-            if (castDoubleValue == castGetTextDoubleValue){
-                System.out.println("Los valores de tu cuenta coinciden");
-            }
-            else{
-                System.out.println("Ha habido un error, los valores de tu cuenta no coinciden con los valores almacenados previamente");
-            }
-
-        }catch (Exception totalValueTableError){
-            System.out.println("El valor buscado no fue encontrado en la página");
-        }
-    }
-
-    protected static void clickBuyLink() {
-        try {
+            financeLink = driver.findElement(By.cssSelector(".navbar-brand"));
+            quoteLink = driver.findElement(By.cssSelector("[href='/quote']"));
             buyLink = driver.findElement(By.cssSelector("[href='/buy']"));
-            buyLink.click();
-        }catch (Exception buyLinkError){
-            System.out.println("El link que buscas no se encuentra en la página");
-        }
-    }
-
-    protected static void buyShares(String symbol, String quantity) {
-        try{
-            symbolField = driver.findElement(By.cssSelector("[name='symbol']"));
-            symbolField.sendKeys(symbol);
-            try{
-                quantityField =driver.findElement(By.cssSelector("[name='qty']"));
-                quantityField.sendKeys(quantity);
-                try{
-                    buyButton = driver.findElement(By.cssSelector(".btn"));
-                    buyButton.click();
-                }catch (Exception buyButtonError){
-                    System.out.println("No se encontro el boton buy en la pagina");
-                }
-            }catch (Exception quantityFieldError){
-                System.out.println("No se encontro el campo quantity en la pagina");
-            }
-
-        }catch (Exception symbolFieldError){
-            System.out.println("No se encontro el campo symbol en la pagina");
-        }
-    }
-
-    protected static void validateShares(String amzn, String i) {
-
-    }
-
-    protected static void clickSellLink() {
-        try {
             sellLink = driver.findElement(By.cssSelector("[href='/sell']"));
-            sellLink.click();
-        }catch (Exception buyLinkError){
-            System.out.println("El link que buscas no se encuentra en la página");
+            historyLink = driver.findElement(By.cssSelector("[href='/history']"));
+            logoutLink = driver.findElement(By.cssSelector("[href='/logout']"));
+
+            if (financeLink.isDisplayed() && quoteLink.isDisplayed() && buyLink.isDisplayed() && sellLink.isDisplayed() && historyLink.isDisplayed()
+            && logoutLink.isDisplayed())
+                System.out.println("All the elements in the main screen are visible.");
+
+            else
+                throw new Exception("Sorry but one element is not visible in the login screen.");
+        }
+        catch(NoSuchElementException ex){
+            throw new Exception("One of the elements is not present on the page.");
         }
     }
 
-    protected static void sellShares(String amzn, String i) {
+    protected static void validarUsuarioSoloCash() throws Exception {
+        try {
+            String symbolValue;
+
+            symbolValueTable = driver.findElement(By.xpath("//tr/td[contains(.,'CASH')]"));
+            totalValueTable = driver.findElement(By.xpath("//tr[1]/td[last()]"));
+
+            if (symbolValueTable.isDisplayed() && totalValueTable.isDisplayed()){
+                System.out.println("All the elements in the main screen are visible.");
+                symbolValue = symbolValueTable.getText();
+                castGetTextDoubleValue = Double.parseDouble(totalValueTable.getText());
+
+                if (symbolValue.equals(symbolDefaultValue) && castGetTextDoubleValue == totalDefaultValue)
+                    System.out.println("The symbol and the total main fields have a default value.");
+                else
+                    System.out.println("The symbol and the total main fields have not a default value.");
+            }
+        }
+
+        catch (NoSuchElementException ex){
+            throw new Exception("One of the elements is not present on the page.");
+        }
+    }
+
+    protected static void clickSell() {
+        sellLink.click();
+    }
+
+    protected static void validarSymbolInvisible() throws Exception {
+        try {
+            dropDownSymbolElement = driver.findElement(By.cssSelector("[name='symbol']"));
+
+            if (dropDownSymbolElement.isDisplayed())
+                System.out.println("There is an error, the object must not be visible.");
+            else
+                System.out.println("The object is hidden, you can proceed with the validation.");
+        }
+        catch (NoSuchElementException ex){
+            throw new Exception("The element is not present on the page.");
+        }
+    }
+
+    protected static void validarQtyInvisible() throws Exception {
+        try {
+            quantityField = driver.findElement(By.cssSelector("[name='qty']"));
+
+            if (quantityField.isDisplayed())
+                System.out.println("There is an error, the object must not be visible.");
+            else
+                System.out.println("The object is hidden, you can proceed with the validation.");
+        }
+        catch (NoSuchElementException ex){
+            throw new Exception("The element is not present on the page.");
+        }
+    }
+
+    protected static void validarBotonSellInvisible() throws Exception{
+        try {
+            sellButton = driver.findElement(By.cssSelector(".btn"));
+
+            if (sellButton.isDisplayed())
+                System.out.println("There is an error, the object must not be visible.");
+            else
+                System.out.println("The object is hidden, you can proceed with the validation.");
+        }
+        catch (NoSuchElementException ex){
+            throw new Exception("The element is not present on the page.");
+        }
+    }
+
+    protected static void validarLeyendaSell() throws Exception {
+        WebElement nothingToSellLB = explicitWait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".container")));
+        explicitWait.until(ExpectedConditions.textToBePresentInElement(nothingToSellLB,"You have nothing to sell"));
+    }
+
+    protected static void validarErrorLogin(){
+        WebElement errorImage;
+        explicitWait = new WebDriverWait(driver,5);
+        try{
+            errorImage = explicitWait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("img.border")));
+            explicitWait.until(ExpectedConditions.attributeContains(errorImage,"src","invalid-username"));
+            System.out.println("The error image was visualize correctly.");
+
+            //explicitWait.until(ExpectedConditions.numberOfElementsToBeMoreThan(By.cssSelector(""),5));
+        }catch (TimeoutException te){
+            System.out.println("The image was not visualise correctly.");
+        }
     }
 }
